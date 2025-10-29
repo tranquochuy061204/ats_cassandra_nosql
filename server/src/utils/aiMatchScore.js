@@ -1,8 +1,8 @@
 import OpenAI from 'openai';
 const openai = new OpenAI({
   apiKey:
-    process.env.OPENAI_API_KEY ||
-    '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',
+    process.env.OPENAI_API_KEY 
+    
 });
 
 export async function aiMatchScore({ jobTitle, jobRequirements, jobSkills, cvText }) {
@@ -36,3 +36,4 @@ Trả lời ngắn gọn dạng JSON như sau:
     return { score: 0, summary: 'Không thể phân tích CV.' };
   }
 }
+
