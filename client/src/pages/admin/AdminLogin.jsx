@@ -13,7 +13,7 @@ const AdminLoginSchema = z.object({
 
 export default function AdminLogin() {
   const navigate = useNavigate();
-  const { setUser } = useAdminAuth();
+  const { setAdmin } = useAdminAuth();
 
   const {
     register,
@@ -24,7 +24,8 @@ export default function AdminLogin() {
   const onSubmit = async (values) => {
     try {
       const res = await api.post('/api/admin/login', values);
-      setUser(res.data.user);
+      console.log('Admin login response:', res.data);
+      setAdmin(res.data.user);
       toast.success('Đăng nhập thành công');
       navigate('/admin/dashboard');
     } catch (err) {

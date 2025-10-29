@@ -11,9 +11,9 @@ const sessionUser = session({
   store: new RedisStore({
     client: redisClient,
     prefix: 'user:',
-    ttl: 60 * 60 * 24 * 7, // 7 days in seconds
+    ttl: 60 * 60 * 1,
   }),
-  secret: process.env.SESSION_SECRET,
+  secret: process.env.SESSION_SECRET || 'team10',
   name: 'user.sid',
   resave: false,
   saveUninitialized: false,

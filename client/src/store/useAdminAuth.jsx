@@ -5,7 +5,7 @@ export const useAdminAuth = create(
   persist(
     (set) => ({
       admin: null,
-      setUser: (admin) => set({ admin }),
+      setAdmin: (admin) => set({ admin }),
       logout: () => set({ admin: null }),
     }),
     {

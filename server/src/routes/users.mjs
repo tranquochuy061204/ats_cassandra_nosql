@@ -28,20 +28,30 @@ router.get('/api/users/:id', async (req, res) => {
 router.patch('/api/users/:id', async (req, res) => {
   try {
     const user_id = types.Uuid.fromString(req.params.id);
-    const { full_name, gender, address_line, province_code, district_code } = req.body;
+    const { full_name, gender, address, province_code, district_code, cv_url } = req.body;
 
+    // Cập nhật dữ liệu trong bảng users_by_id
     await client.execute(
-      `UPDATE users_by_id
-       SET full_name = ?, gender = ?, address = ?, province_code = ?, district_code = ?
+      `UPDATE users_by_id 
+       SET full_name = ?, gender = ?, address = ?, province_code = ?, district_code = ?, cv_url = ?
        WHERE user_id = ?`,
-      [full_name, gender, address_line, province_code, district_code, user_id],
+      [full_name, gender, address, province_code, district_code, cv_url, user_id],
       { prepare: true }
     );
 
-    res.json({ full_name, gender, address_line, province_code, district_code });
+    // ✅ Lấy lại bản ghi mới nhất để trả về
+    const result = await client.execute(
+      'SELECT user_id, full_name, gender, address, province_code, district_code, cv_url, user_email, role FROM users_by_id WHERE user_id = ?',
+      [user_id],
+      { prepare: true }
+    );
+
+    if (result.rowLength === 0) return res.status(404).json({ error: 'User not found' });
+
+    res.json(result.rows[0]); // ✅ Trả về user sau cập nhật
   } catch (err) {
-    console.error(err);
-    res.status(400).json({ error: 'Invalid request' });
+    console.error('❌ Update user error:', err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

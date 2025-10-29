@@ -11,9 +11,9 @@ const sessionAdmin = session({
   store: new RedisStore({
     client: redisClient,
     prefix: 'admin:',
-    ttl: 60 * 60 * 24 * 7, // 7 days in seconds
+    ttl: 60 * 60 * 1,
   }),
-  secret: process.env.SESSION_SECRET,
+  secret: process.env.SESSION_SECRET || 'team10',
   name: 'admin.sid',
   resave: false,
   saveUninitialized: false,

@@ -1,29 +1,28 @@
 import { api } from './api.jsx';
 import { useAuth } from '../store/useAuth.jsx';
 import { useAdminAuth } from '../store/useAdminAuth.jsx';
-import toast from 'react-hot-toast';
 
 export async function verifySession() {
-  const { user, setUser, logout } = useAuth.getState();
-  const { admin, setUser: setAdmin, logout: adminLogout } = useAdminAuth.getState();
+  const { setUser, logout } = useAuth.getState();
+  const { setAdmin, logout: adminLogout } = useAdminAuth.getState();
 
   try {
+    // thử /me (user)
     const res = await api.get('/me');
-    const userData = res.data.user;
-
-    // ✅ Nếu user hợp lệ → kiểm tra role để xác định loại
-    if (['admin', 'recruiter', 'coordinator'].includes(userData.role)) {
-      setAdmin(userData);
-    } else {
-      setUser(userData);
+    const u = res.data.user;
+    if (u.role === 'admin' || u.role === 'recruiter' || u.role === 'coordinator') {
+      return;
     }
-  } catch (err) {
-    // ❌ Session hết hạn → clear localStorage
-    if (user) logout();
-    if (admin) adminLogout();
+    setUser(u);
+  } catch {
+    logout();
+  }
 
-    console.warn('Session expired, logging out...');
-    console.log(err);
-    toast('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+  try {
+    // thử /api/admin/me
+    const res = await api.get('/api/admin/me');
+    setAdmin(res.data.user);
+  } catch {
+    adminLogout();
   }
 }

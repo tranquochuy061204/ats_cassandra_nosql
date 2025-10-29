@@ -9,7 +9,7 @@ import client from '../config/cassandra.mjs';
 import { RegisterSchema, LoginSchema } from '../database/schemas/authValidationSchema.mjs';
 import ensureAuthenticated from '../middlewares/ensureAuthenticated.mjs';
 import { normalizeEmail } from '../utils/helpers.mjs';
-import { Q_CREATE_USER, Q_CREATE_USER_BY_EMAIL } from '../database/query.mjs';
+import { Q_CREATE_USER, Q_CREATE_USER_BY_EMAIL, Q_CREATE_USER_BY_ROLE } from '../database/query.mjs';
 
 const router = express.Router();
 
@@ -57,6 +57,11 @@ router.post('/api/register', async (req, res) => {
       {
         query: Q_CREATE_USER_BY_EMAIL,
         params: [normEmail, userId],
+      },
+      // ✅ Đồng bộ bảng users_by_role
+      {
+        query: Q_CREATE_USER_BY_ROLE,
+        params: [role, userId, fullName, normEmail],
       },
     ];
 

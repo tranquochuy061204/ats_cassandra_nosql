@@ -1,5 +1,4 @@
 import client from '../config/cassandra.mjs';
-import { types } from 'cassandra-driver';
 
 // ---------- Helpers cho bảng view public ----------
 export function shouldAppear(row) {
@@ -81,14 +80,15 @@ export async function syncPublicView(oldRow, newRow) {
 }
 
 // ---------- Build dynamic UPDATE ----------
-export function buildUpdate(fields) {
+export function buildUpdateWithRecruiter(fields) {
   const allowed = [
+    'recruiter_id', // ✅ thêm dòng này
     'title_vi',
     'level',
     'employment_type',
     'work_type',
     'address_line',
-    'province_code', // 👈 thêm
+    'province_code',
     'salary_vnd_min',
     'salary_vnd_max',
     'salary_negotiable',

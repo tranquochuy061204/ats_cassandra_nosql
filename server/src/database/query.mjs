@@ -16,4 +16,11 @@ export const Q_CREATE_USER = `
 
 export const Q_CREATE_USER_BY_EMAIL = `
   INSERT INTO users_by_email (user_email, user_id)
-  VALUES (?, ?)`;
+  VALUES (?, ?)
+`;
+
+// ✅ Thêm query mới
+export const Q_CREATE_USER_BY_ROLE = `
+  INSERT INTO users_by_role (role, user_id, full_name, email)
+  VALUES (?, ?, ?, ?)
+`;

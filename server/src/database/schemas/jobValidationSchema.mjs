@@ -9,7 +9,9 @@ export const QuestionBool = z.object({
 });
 
 export const CreateJobSchema = z.object({
-  recruiter_id: z.uuid().default(''),
+  recruiter_id: z
+    .string()
+    .regex(/^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$/, 'Invalid UUID format'),
   title_vi: z.string().min(2),
   level: z.enum(['Intern', 'Fresher', 'Junior', 'Middle', 'Senior', 'Lead', 'Manager']),
   employment_type: z.enum(['Full-time', 'Part-time', 'Internship', 'Contract']),
@@ -49,8 +51,8 @@ export const UpdateJobSchema = z.object({
   work_type: z.enum(['ONSITE', 'REMOTE', 'HYBRID']).optional(),
   address_line: z.string().min(1).optional(),
 
-  salary_vnd_min: z.number().int().nonnegative().optional(),
-  salary_vnd_max: z.number().int().nonnegative().optional(),
+  salary_vnd_min: z.number().int().nonnegative().nullable().optional(),
+  salary_vnd_max: z.number().int().nonnegative().nullable().optional(),
   salary_negotiable: z.boolean().optional(),
   salary_gross: z.boolean().optional(),
 

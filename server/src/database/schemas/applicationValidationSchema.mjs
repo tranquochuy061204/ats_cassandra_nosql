@@ -8,7 +8,7 @@ export const CreateApplicationSchema = z.object({
   // status mặc định active
   status: z.enum(['active', 'shortlisted', 'rejected', 'hired']).optional().default('active'),
   // (tuỳ) recruiter feedback R2 - để null khi tạo
-  feedback: z.any().optional(),
+  feedback_json: z.any().optional(),
 });
 
 // Lấy 1 application phải đủ 3 khóa (PK/CK)
@@ -32,5 +32,5 @@ export const PatchSchema = z.object({
   candidate_id: z.string().uuid(),
   applied_at: z.string().datetime(),
   status: z.enum(['active', 'shortlist', 'rejected', 'hired']).optional(),
-  feedback: z.any().optional(),
+  feedback_json: z.any().optional(),
 });
