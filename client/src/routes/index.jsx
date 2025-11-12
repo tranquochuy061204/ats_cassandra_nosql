@@ -18,6 +18,10 @@ import ScheduleInterview from '../pages/admin/ScheduleInterview.jsx';
 import AdminInterviewCalendar from '../pages/admin/AdminInterviewCalendar.jsx';
 import AdminUsers from '../pages/admin/AdminUsers.jsx'; // ✅ NEW
 import AdminShortlist from '../pages/admin/AdminShortlist.jsx';
+import AdminAnalytics from '../pages/admin/AdminAnalytics.jsx';
+import { useAdminAuth } from '../store/useAdminAuth.jsx';
+
+const { admin } = useAdminAuth();
 
 const router = createBrowserRouter([
   // ========================
@@ -61,6 +65,7 @@ const router = createBrowserRouter([
           // ✅ NEW: ROUTE QUẢN LÝ USERS
           { path: 'users', element: <AdminUsers /> },
           { path: 'shortlist', element: <AdminShortlist /> },
+          { path: 'analytics', element: <AdminAnalytics /> },
         ],
       },
     ],

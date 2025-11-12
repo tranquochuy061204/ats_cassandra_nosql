@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { useState, useEffect } from 'react';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
+import { useAdminAuth } from '../store/useAdminAuth.jsx';
 
 // ✨ cấu hình thanh công cụ Rich Text
 const quillModules = {
@@ -44,6 +45,8 @@ export default function JobForm({ job, onClose, onSuccess }) {
     }
   );
 
+  const { admin } = useAdminAuth();
+  const canEdit = admin?.role === 'admin'; // 🔐 Chỉ admin mới chỉnh sửa
   const [provinces, setProvinces] = useState([]);
   const isEditing = Boolean(job);
 
@@ -65,6 +68,7 @@ export default function JobForm({ job, onClose, onSuccess }) {
 
   // ====== Câu hỏi tuyển dụng ======
   const handleAddQuestion = () => {
+    if (!canEdit) return;
     setForm({
       ...form,
       questions: [
@@ -81,12 +85,14 @@ export default function JobForm({ job, onClose, onSuccess }) {
   };
 
   const handleRemoveQuestion = (index) => {
+    if (!canEdit) return;
     const updated = [...form.questions];
     updated.splice(index, 1);
     setForm({ ...form, questions: updated });
   };
 
   const handleUpdateQuestion = (index, key, value) => {
+    if (!canEdit) return;
     const updated = [...form.questions];
     updated[index][key] = value;
     setForm({ ...form, questions: updated });
@@ -98,7 +104,6 @@ export default function JobForm({ job, onClose, onSuccess }) {
       const parseNum = (v) => (v === '' || v === null || v === undefined ? null : Number(v));
       const DEFAULT_RECRUITER_ID = '00000000-0000-0000-0000-000000000001';
 
-      // 🧩 Chuẩn hóa payload
       const payload = {
         ...currentForm,
         salary_vnd_min: parseNum(currentForm.salary_vnd_min),
@@ -116,12 +121,10 @@ export default function JobForm({ job, onClose, onSuccess }) {
         payload.deadline = new Date(currentForm.deadline).toISOString().split('T')[0];
       }
 
-      // 🧩 Nếu là tạo mới → gán recruiter mặc định
       if (!isEditing) {
         payload.recruiter_id = DEFAULT_RECRUITER_ID;
         await api.post('/api/admin/jobs', payload);
       } else {
-        // 🧩 Nếu là chỉnh sửa → không gửi recruiter_id
         delete payload.recruiter_id;
         await api.patch(`/api/admin/jobs/${job.job_id}`, payload);
       }
@@ -144,9 +147,13 @@ export default function JobForm({ job, onClose, onSuccess }) {
         className="bg-white p-6 rounded-lg w-[750px] max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-xl font-semibold mb-4 text-center">{isEditing ? 'Chỉnh sửa Job' : 'Tạo Job mới'}</h2>
+        <h2 className="text-xl font-semibold mb-4 text-center">
+          {canEdit ? (isEditing ? 'Chỉnh sửa Job' : 'Tạo Job mới') : 'Xem thông tin Job'}
+        </h2>
 
-        <div className="grid grid-cols-2 gap-4 text-sm">
+        <div
+          className={`grid grid-cols-2 gap-4 text-sm ${!canEdit ? 'opacity-80 cursor-not-allowed select-none' : ''}`}
+        >
           {/* --- THÔNG TIN CƠ BẢN --- */}
           <div className="col-span-2">
             <label className="font-bold">Tiêu đề việc làm</label>
@@ -154,6 +161,7 @@ export default function JobForm({ job, onClose, onSuccess }) {
               value={form.title_vi}
               onChange={(e) => setForm({ ...form, title_vi: e.target.value })}
               className="border rounded px-3 py-2 w-full mt-1"
+              disabled={!canEdit}
             />
           </div>
 
@@ -166,11 +174,12 @@ export default function JobForm({ job, onClose, onSuccess }) {
               onChange={(v) => setForm({ ...form, description_vi: v })}
               modules={quillModules}
               formats={quillFormats}
-              className="mt-1 bg-white"
-              placeholder="Nhập mô tả công việc (gạch đầu dòng, in đậm, xuống dòng...)"
+              readOnly={!canEdit}
+              className={`mt-1 bg-white ${!canEdit ? 'pointer-events-none opacity-75' : ''}`}
             />
           </div>
-          {/* --- PHÚC LỢI (Rich Text) --- */}
+
+          {/* --- PHÚC LỢI --- */}
           <div className="col-span-2">
             <label className="font-bold">Phúc lợi</label>
             <ReactQuill
@@ -179,11 +188,12 @@ export default function JobForm({ job, onClose, onSuccess }) {
               onChange={(v) => setForm({ ...form, benefits: v })}
               modules={quillModules}
               formats={quillFormats}
-              className="mt-1 bg-white"
-              placeholder="Nhập danh sách phúc lợi (thưởng, nghỉ phép, bảo hiểm...)"
+              readOnly={!canEdit}
+              className={`mt-1 bg-white ${!canEdit ? 'pointer-events-none opacity-75' : ''}`}
             />
           </div>
 
+          {/* --- YÊU CẦU --- */}
           <div className="col-span-2">
             <label className="font-bold">Yêu cầu ứng viên</label>
             <ReactQuill
@@ -192,19 +202,19 @@ export default function JobForm({ job, onClose, onSuccess }) {
               onChange={(v) => setForm({ ...form, requirements_vi: v })}
               modules={quillModules}
               formats={quillFormats}
-              className="mt-1 bg-white"
-              placeholder="Nhập yêu cầu kỹ năng, kinh nghiệm..."
+              readOnly={!canEdit}
+              className={`mt-1 bg-white ${!canEdit ? 'pointer-events-none opacity-75' : ''}`}
             />
           </div>
 
-          {/* --- ĐỊA CHỈ & CẤP BẬC --- */}
+          {/* --- ĐỊA CHỈ --- */}
           <div className="col-span-2">
             <label className="font-bold">Địa chỉ làm việc</label>
             <input
               value={form.address_line}
               onChange={(e) => setForm({ ...form, address_line: e.target.value })}
               className="border rounded px-3 py-2 w-full mt-1"
-              placeholder="VD: 123 Nguyễn Văn Cừ, Quận 5, TP.HCM"
+              disabled={!canEdit}
             />
           </div>
 
@@ -214,6 +224,7 @@ export default function JobForm({ job, onClose, onSuccess }) {
               value={form.province_code}
               onChange={(e) => setForm({ ...form, province_code: e.target.value })}
               className="border rounded px-3 py-2 w-full mt-1"
+              disabled={!canEdit}
             >
               <option value="">-- Chọn tỉnh/thành --</option>
               {provinces.map((p) => (
@@ -224,49 +235,26 @@ export default function JobForm({ job, onClose, onSuccess }) {
             </select>
           </div>
 
-          <div>
-            <label className="font-bold">Loại hình làm việc</label>
-            <select
-              value={form.employment_type}
-              onChange={(e) => setForm({ ...form, employment_type: e.target.value })}
-              className="border rounded px-3 py-2 w-full mt-1"
-            >
-              <option>Full-time</option>
-              <option>Part-time</option>
-              <option>Internship</option>
-              <option>Contract</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="font-bold">Hình thức làm việc</label>
-            <select
-              value={form.work_type}
-              onChange={(e) => setForm({ ...form, work_type: e.target.value })}
-              className="border rounded px-3 py-2 w-full mt-1"
-            >
-              <option>ONSITE</option>
-              <option>REMOTE</option>
-              <option>HYBRID</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="font-bold">Cấp bậc</label>
-            <select
-              value={form.level}
-              onChange={(e) => setForm({ ...form, level: e.target.value })}
-              className="border rounded px-3 py-2 w-full mt-1"
-            >
-              <option>Intern</option>
-              <option>Fresher</option>
-              <option>Junior</option>
-              <option>Middle</option>
-              <option>Senior</option>
-              <option>Lead</option>
-              <option>Manager</option>
-            </select>
-          </div>
+          {/* --- CÁC TRƯỜNG KHÁC --- */}
+          {[
+            ['employment_type', ['Full-time', 'Part-time', 'Internship', 'Contract']],
+            ['work_type', ['ONSITE', 'REMOTE', 'HYBRID']],
+            ['level', ['Intern', 'Fresher', 'Junior', 'Middle', 'Senior', 'Lead', 'Manager']],
+          ].map(([key, options]) => (
+            <div key={key}>
+              <label className="font-bold">{key.replace('_', ' ')}</label>
+              <select
+                value={form[key]}
+                onChange={(e) => setForm({ ...form, [key]: e.target.value })}
+                className="border rounded px-3 py-2 w-full mt-1"
+                disabled={!canEdit}
+              >
+                {options.map((opt) => (
+                  <option key={opt}>{opt}</option>
+                ))}
+              </select>
+            </div>
+          ))}
 
           {/* --- LƯƠNG --- */}
           <div>
@@ -276,6 +264,7 @@ export default function JobForm({ job, onClose, onSuccess }) {
               value={form.salary_vnd_min}
               onChange={(e) => setForm({ ...form, salary_vnd_min: e.target.value })}
               className="border rounded px-3 py-2 w-full mt-1"
+              disabled={!canEdit}
             />
           </div>
           <div>
@@ -285,6 +274,7 @@ export default function JobForm({ job, onClose, onSuccess }) {
               value={form.salary_vnd_max}
               onChange={(e) => setForm({ ...form, salary_vnd_max: e.target.value })}
               className="border rounded px-3 py-2 w-full mt-1"
+              disabled={!canEdit}
             />
           </div>
 
@@ -295,7 +285,7 @@ export default function JobForm({ job, onClose, onSuccess }) {
               value={form.working_hours}
               onChange={(e) => setForm({ ...form, working_hours: e.target.value })}
               className="border rounded px-3 py-2 w-full mt-1"
-              placeholder="VD: 8h30 - 17h30 (T2 - T6)"
+              disabled={!canEdit}
             />
           </div>
 
@@ -306,6 +296,7 @@ export default function JobForm({ job, onClose, onSuccess }) {
               value={form.deadline}
               onChange={(e) => setForm({ ...form, deadline: e.target.value })}
               className="border rounded px-3 py-2 w-full mt-1"
+              disabled={!canEdit}
             />
           </div>
 
@@ -315,6 +306,7 @@ export default function JobForm({ job, onClose, onSuccess }) {
               value={form.status}
               onChange={(e) => setForm({ ...form, status: e.target.value })}
               className="border rounded px-3 py-2 w-full mt-1"
+              disabled={!canEdit}
             >
               <option value="DRAFT">Bản nháp</option>
               <option value="OPEN">Đang mở tuyển</option>
@@ -329,21 +321,23 @@ export default function JobForm({ job, onClose, onSuccess }) {
               value={form.skills}
               onChange={(e) => setForm({ ...form, skills: e.target.value })}
               className="border rounded px-3 py-2 w-full mt-1"
-              placeholder="VD: ReactJS, Tailwind, REST API"
+              disabled={!canEdit}
             />
           </div>
 
-          {/* --- CÂU HỎI YES/NO --- */}
+          {/* --- CÂU HỎI TUYỂN DỤNG --- */}
           <div className="col-span-2 border-t pt-4 mt-3">
             <div className="flex justify-between items-center mb-2">
               <label className="font-bold text-gray-700">Câu hỏi tuyển dụng (Yes/No)</label>
-              <button
-                onClick={handleAddQuestion}
-                type="button"
-                className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700"
-              >
-                + Thêm câu hỏi
-              </button>
+              {canEdit && (
+                <button
+                  onClick={handleAddQuestion}
+                  type="button"
+                  className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700"
+                >
+                  + Thêm câu hỏi
+                </button>
+              )}
             </div>
 
             {form.questions.length === 0 && <p className="text-gray-500 text-sm">Chưa có câu hỏi nào.</p>}
@@ -356,11 +350,13 @@ export default function JobForm({ job, onClose, onSuccess }) {
                   onChange={(e) => handleUpdateQuestion(idx, 'label', e.target.value)}
                   placeholder={`Câu hỏi #${idx + 1}`}
                   className="flex-1 border rounded px-2 py-1"
+                  disabled={!canEdit}
                 />
                 <select
                   value={q.preferred_answer ? 'có' : 'không'}
                   onChange={(e) => handleUpdateQuestion(idx, 'preferred_answer', e.target.value === 'có')}
                   className="border rounded px-2 py-1"
+                  disabled={!canEdit}
                 >
                   <option value="có">Có</option>
                   <option value="không">Không</option>
@@ -370,16 +366,19 @@ export default function JobForm({ job, onClose, onSuccess }) {
                     type="checkbox"
                     checked={q.knockout}
                     onChange={(e) => handleUpdateQuestion(idx, 'knockout', e.target.checked)}
+                    disabled={!canEdit}
                   />
                   Knockout
                 </label>
-                <button
-                  onClick={() => handleRemoveQuestion(idx)}
-                  type="button"
-                  className="text-red-600 hover:text-red-800 font-bold px-2"
-                >
-                  ✕
-                </button>
+                {canEdit && (
+                  <button
+                    onClick={() => handleRemoveQuestion(idx)}
+                    type="button"
+                    className="text-red-600 hover:text-red-800 font-bold px-2"
+                  >
+                    ✕
+                  </button>
+                )}
               </div>
             ))}
           </div>
@@ -390,22 +389,25 @@ export default function JobForm({ job, onClose, onSuccess }) {
               type="checkbox"
               checked={form.visible}
               onChange={(e) => setForm({ ...form, visible: e.target.checked })}
+              disabled={!canEdit}
             />
             <label>Hiển thị công khai</label>
           </div>
         </div>
 
-        {/* BUTTONS */}
+        {/* --- NÚT HÀNH ĐỘNG --- */}
         <div className="flex justify-end gap-3 mt-6">
           <button onClick={onClose} className="px-4 py-2 rounded border">
-            Hủy
+            Đóng
           </button>
-          <button
-            onClick={() => mutation.mutate(form)}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-          >
-            {isEditing ? 'Lưu thay đổi' : 'Tạo mới'}
-          </button>
+          {canEdit && (
+            <button
+              onClick={() => mutation.mutate(form)}
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            >
+              {isEditing ? 'Lưu thay đổi' : 'Tạo mới'}
+            </button>
+          )}
         </div>
       </div>
     </div>

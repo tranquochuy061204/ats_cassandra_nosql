@@ -50,15 +50,17 @@ export default function AdminJobs() {
             Theo dõi, chỉnh sửa và quản lý các vị trí tuyển dụng của hệ thống.
           </p>
         </div>
-        <button
-          onClick={() => {
-            setSelectedJob(null);
-            setShowForm(true);
-          }}
-          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-fuchsia-600 to-pink-500 text-white rounded-lg shadow hover:opacity-90 transition"
-        >
-          <PlusCircle size={18} /> Thêm việc làm
-        </button>
+        {admin && admin.role === 'admin' && (
+          <button
+            onClick={() => {
+              setSelectedJob(null);
+              setShowForm(true);
+            }}
+            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-fuchsia-600 to-pink-500 text-white rounded-lg shadow hover:opacity-90 transition"
+          >
+            <PlusCircle size={18} /> Thêm việc làm
+          </button>
+        )}
       </div>
 
       {/* Table */}
@@ -105,16 +107,28 @@ export default function AdminJobs() {
                 </td>
                 <td className="py-3 px-4 text-center">
                   <div className="flex justify-center gap-3">
-                    <button
-                      onClick={() => {
-                        setSelectedJob(job);
-                        setShowForm(true);
-                      }}
-                      className="flex items-center gap-1 text-indigo-600 hover:underline"
-                    >
-                      <Edit3 size={15} /> Sửa
-                    </button>
-
+                    {admin && admin.role === 'admin' && (
+                      <button
+                        onClick={() => {
+                          setSelectedJob(job);
+                          setShowForm(true);
+                        }}
+                        className="flex items-center gap-1 text-blue-600 hover:underline"
+                      >
+                        <Edit3 size={15} /> Sửa
+                      </button>
+                    )}
+                    {admin && admin.role === 'coordinator' && (
+                      <button
+                        onClick={() => {
+                          setSelectedJob(job);
+                          setShowForm(true);
+                        }}
+                        className="flex items-center gap-1 text-blue-600 hover:underline"
+                      >
+                        <Edit3 size={15} /> Xem
+                      </button>
+                    )}
                     {admin?.role === 'coordinator' && (
                       <button
                         onClick={() => setAssignJob(job)}

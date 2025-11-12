@@ -59,7 +59,7 @@ export default function AdminShortlist() {
           ) : jobs?.length === 0 ? (
             <div className="text-center py-10 text-gray-500 italic">Chưa có công việc nào.</div>
           ) : (
-            jobs.map((job) => (
+            jobs?.map((job) => (
               <div
                 key={job.job_id}
                 onClick={() => setSelectedJob(job.job_id)}
@@ -100,7 +100,7 @@ export default function AdminShortlist() {
           </div>
         ) : (
           <div className="space-y-4">
-            {shortlist.map((c) => (
+            {shortlist?.map((c) => (
               <div
                 key={c.candidate_id}
                 className="flex justify-between items-center bg-gradient-to-r from-white to-indigo-50 border border-gray-100 rounded-xl px-5 py-3 hover:shadow-md transition"

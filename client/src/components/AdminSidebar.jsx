@@ -48,7 +48,9 @@ export default function AdminSidebar() {
         {/* Tổng quan */}
         <NavItem to="/admin/dashboard" icon={<LayoutDashboard size={18} />} label="Tổng quan" />
         {/* Việc làm */}
-        <NavItem to="/admin/jobs" icon={<Briefcase size={18} />} label="Việc làm" />
+        {admin?.role === 'admin' || admin?.role === 'coordinator' ? (
+          <NavItem to="/admin/jobs" icon={<Briefcase size={18} />} label="Việc làm" />
+        ) : null}
         {/* Nhóm Ứng tuyển */}
         {admin?.role === 'admin' && <NavItem to="/admin/shortlist" icon={<Users size={18} />} label="Shortlist" />}
         {admin?.role === 'recruiter' && (
@@ -75,7 +77,7 @@ export default function AdminSidebar() {
           </div>
         )}
         {/* Người dùng */}
-        <NavItem to="/admin/users" icon={<Users size={18} />} label="Người dùng" />
+        {admin?.role === 'admin' && <NavItem to="/admin/users" icon={<Users size={18} />} label="Người dùng" />}
         {/* Nhóm Phỏng vấn */}
         <div>
           <button
@@ -102,8 +104,7 @@ export default function AdminSidebar() {
             </div>
           )}
         </div>
-        {/* Phân tích */}
-        <NavItem to="/admin/analytics" icon={<BarChart2 size={18} />} label="Phân tích" />
+
         {/* Cài đặt */}
         <NavItem to="/admin/settings" icon={<Settings size={18} />} label="Cài đặt" />
       </nav>
